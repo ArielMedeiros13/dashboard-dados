@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AXIS Summit | Dashboard</title>
+  <link rel="icon" type="image/png" href="https://sejagudi.com/axis/assets/favicon.png" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <img src="https://sejagudi.com/axis/assets/logo-axis.PNG" alt="AXIS" class="brand-logo" />
+      </div>
+      <div class="brand-meta">
+        <div class="brand-title">Dashboard de Inscrições</div>
+        <div class="brand-subtitle" id="subtitle">Carregando…</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-ghost" id="btnRefresh" title="Atualizar agora">Atualizar</button>
+
+      <label class="select">
+        <span>Auto</span>
+        <select id="refreshSelect">
+          <option value="0">Off</option>
+          <option value="15000">15s</option>
+          <option value="30000" selected>30s</option>
+          <option value="60000">60s</option>
+          <option value="300000">5min</option>
+        </select>
+      </label>
+
+      <button class="btn" id="btnOp" data-tab="op">Operação</button>
+      <button class="btn btn-ghost" id="btnQual" data-tab="qual">Qualidade</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="tab-op" class="tab active">
+      <div class="grid cards">
+        <div class="card">
+          <div class="kpi">
+            <div class="kpi-label">Total de inscrições</div>
+            <div class="kpi-value" id="kpiTotal">–</div>
+            <div class="kpi-foot" id="kpiTotalFoot">–</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="kpi">
+            <div class="kpi-label">Únicos (CPF)</div>
+            <div class="kpi-value" id="kpiUnicos">–</div>
+            <div class="kpi-foot" id="kpiUnicosFoot">–</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="kpi">
+            <div class="kpi-label">Duplicatas (CPF)</div>
+            <div class="kpi-value" id="kpiDup">–</div>
+            <div class="kpi-foot" id="kpiDupFoot">–</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="kpi">
+            <div class="kpi-label">CPF inválido</div>
+            <div class="kpi-value" id="kpiCpfInv">–</div>
+            <div class="kpi-foot" id="kpiCpfInvFoot">–</div>
+          </div>
+        </div>
+
+        <div class="card span-2">
+          <div class="kpi">
+            <div class="kpi-label">Modalidades extras</div>
+            <div class="kpi-split">
+              <div class="pill">
+                <div class="pill-top">Atelier</div>
+                <div class="pill-val" id="kpiAtelier">–</div>
+              </div>
+              <div class="pill">
+                <div class="pill-top">Rodada</div>
+                <div class="pill-val" id="kpiRodada">–</div>
+              </div>
+              <div class="pill">
+                <div class="pill-top">Sem extra</div>
+                <div class="pill-val" id="kpiSemExtra">–</div>
+              </div>
+              <div class="pill pill-muted">
+                <div class="pill-top">Extra (%)</div>
+                <div class="pill-val" id="kpiExtraPct">–</div>
+              </div>
+            </div>
+            <div class="kpi-foot" id="kpiModalFoot">–</div>
+          </div>
+        </div>
+
+        <div class="card span-2">
+          <div class="kpi">
+            <div class="kpi-label">Velocidade (inscrições)</div>
+            <div class="kpi-split">
+              <div class="pill">
+                <div class="pill-top">Últ. 2h</div>
+                <div class="pill-val" id="kpi2h">–</div>
+              </div>
+              <div class="pill">
+                <div class="pill-top">Últ. 24h</div>
+                <div class="pill-val" id="kpi24h">–</div>
+              </div>
+              <div class="pill">
+                <div class="pill-top">Últ. 7d</div>
+                <div class="pill-val" id="kpi7d">–</div>
+              </div>
+            </div>
+            <div class="kpi-foot">Picos e desaceleração em tempo real.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid charts">
+        <div class="card span-3">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Inscrições por dia</div>
+              <div class="card-sub">Linha (histórico do formulário)</div>
+            </div>
+            <div class="chip" id="chipLastTs">–</div>
+          </div>
+          <canvas id="chartByDay" height="220"></canvas>
+        </div>
+
+        <div class="card span-2">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Inscrições por hora</div>
+              <div class="card-sub">Barras (0–23h)</div>
+            </div>
+            <div class="chip">UTC</div>
+          </div>
+          <canvas id="chartByHour" height="220"></canvas>
+        </div>
+
+        <div class="card span-2">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Macro-áreas</div>
+              <div class="card-sub">Barras (agregadas automaticamente)</div>
+            </div>
+            <div class="chip" id="chipAreaMulti">–</div>
+          </div>
+          <canvas id="chartAreaMacro" height="220"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-qual" class="tab">
+      <div class="grid cards">
+        <div class="card span-2">
+          <div class="kpi">
+            <div class="kpi-label">Campos vazios</div>
+            <div class="kpi-split">
+              <div class="pill pill-muted">
+                <div class="pill-top">Área vazia</div>
+                <div class="pill-val" id="kpiAreaVazia">–</div>
+              </div>
+              <div class="pill pill-muted">
+                <div class="pill-top">Apresent. vazia</div>
+                <div class="pill-val" id="kpiApresVazia">–</div>
+              </div>
+              <div class="pill pill-muted">
+                <div class="pill-top">Área (%)</div>
+                <div class="pill-val" id="kpiAreaPct">–</div>
+              </div>
+              <div class="pill pill-muted">
+                <div class="pill-top">Apresent. (%)</div>
+                <div class="pill-val" id="kpiApresPct">–</div>
+              </div>
+            </div>
+            <div class="kpi-foot">Completude do formulário ao longo do tempo.</div>
+          </div>
+        </div>
+
+        <div class="card span-2">
+          <div class="kpi">
+            <div class="kpi-label">Suspeitos em “Área”</div>
+            <div class="kpi-value" id="kpiSuspeitos">–</div>
+            <div class="kpi-foot" id="kpiSuspeitosFoot">–</div>
+          </div>
+        </div>
+
+        <div class="card span-2">
+          <div class="kpi">
+            <div class="kpi-label">E-mails duplicados</div>
+            <div class="kpi-value" id="kpiEmailDup">–</div>
+            <div class="kpi-foot" id="kpiEmailDupFoot">–</div>
+          </div>
+        </div>
+
+        <div class="card span-4">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Completude por dia</div>
+              <div class="card-sub">% Área preenchida e % Apresentação preenchida</div>
+            </div>
+            <div class="chip">por dia</div>
+          </div>
+          <canvas id="chartQuality" height="220"></canvas>
+        </div>
+      </div>
+
+      <div class="grid lists">
+        <div class="card span-3">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Top áreas (limpas)</div>
+              <div class="card-sub">Somente respostas válidas (não vazias)</div>
+            </div>
+            <div class="chip">top 12</div>
+          </div>
+          <div class="table" id="tblTopAreas"></div>
+        </div>
+
+        <div class="card span-3">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Amostras (mascaradas)</div>
+              <div class="card-sub">Auditoria sem expor dados pessoais</div>
+            </div>
+            <div class="chip">safe</div>
+          </div>
+          <div class="two-col">
+            <div>
+              <div class="mini-title">CPF inválido</div>
+              <div class="table" id="tblCpfInvalid"></div>
+            </div>
+            <div>
+              <div class="mini-title">CPF duplicado (amostra)</div>
+              <div class="table" id="tblCpfDup"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card span-2">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Suspeitos em Área</div>
+              <div class="card-sub">Telefones/CPFs no campo errado</div>
+            </div>
+            <div class="chip">auditoria</div>
+          </div>
+          <div class="table" id="tblSuspeitosArea"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="footer">
+      <div class="muted">Hospedado em <strong>sejagudi.com/dados/</strong></div>
+      <div class="muted" id="errBox"></div>
+    </section>
+  </main>
+
+  <div id="chartTooltip" class="chart-tooltip"></div>
+  <script src="./app.js"></script>
+</body>
+</html>
